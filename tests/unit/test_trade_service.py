@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.schemas.trade import TradeAccepted, TradeCreate
+from app.schemas.trade import TradeAccepted, TradeCreate, TradeTemporaryFailure
 from app.services.trade_service import TradeService
 
 
@@ -106,17 +106,30 @@ class TestTradeService:
         assert result.status == "accepted"
         mock_producer.assert_awaited_once()
 
-    async def test_ddb_failure_rolls_back_before_kafka(
+    async def test_ddb_failure_returns_temporary_failure_and_no_kafka(
         self, mock_repo, mock_producer, mock_request_repo
     ):
-        """If DynamoDB write fails, Kafka must NOT be published."""
+        """If DynamoDB write fails, return 503-style response and do NOT publish to Kafka."""
         mock_request_repo.create_pending.side_effect = RuntimeError("DynamoDB unavailable")
         service = TradeService(
             repo=mock_repo, producer=mock_producer, request_repo=mock_request_repo
         )
-        with pytest.raises(RuntimeError, match="DynamoDB unavailable"):
-            await service.ingest_trade(make_trade())
+        result = await service.ingest_trade(make_trade())
+        assert isinstance(result, TradeTemporaryFailure)
+        assert result.status == "temporary_failure"
         mock_producer.assert_not_awaited()
+
+    async def test_kafka_failure_returns_temporary_failure(
+        self, mock_repo, mock_producer, mock_request_repo
+    ):
+        """If Kafka publish fails after DDB success, return temporary failure."""
+        mock_producer.side_effect = RuntimeError("Kafka unavailable")
+        service = TradeService(
+            repo=mock_repo, producer=mock_producer, request_repo=mock_request_repo
+        )
+        result = await service.ingest_trade(make_trade())
+        assert isinstance(result, TradeTemporaryFailure)
+        assert result.status == "temporary_failure"
 
     async def test_get_all_trades_delegates_to_repo(
         self, mock_repo, mock_producer, mock_request_repo
