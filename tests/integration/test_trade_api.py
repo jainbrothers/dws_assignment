@@ -4,6 +4,7 @@ Integration tests: in-memory SQLite + mocked Kafka + mocked DynamoDB.
 
 import uuid
 from datetime import date, timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -182,7 +183,17 @@ class TestGetTrades:
 
 
 class TestHealthEndpoint:
-    async def test_health_returns_200(self, client):
+    @patch("app.routers.health.kafka_producer_module.get_producer", return_value=MagicMock())
+    async def test_health_returns_200_ok_when_db_and_kafka_ok(self, _mock_get_producer, client):
         resp = await client.get("/api/v1/health")
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
+        assert resp.json()["db"] == "ok"
+        assert resp.json()["kafka"] == "ok"
+
+    async def test_health_returns_degraded_when_kafka_not_initialised(self, client):
+        with patch("app.routers.health.kafka_producer_module.get_producer", return_value=None):
+            resp = await client.get("/api/v1/health")
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "degraded"
+        assert resp.json()["kafka"] == "not_initialised"
