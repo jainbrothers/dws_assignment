@@ -1,4 +1,4 @@
-*# Problem statement
+## Problem statement
 
 The problem requires building a high-throughput REST API that ingests trade records, validates them according to defined business rules, persists them in a durable store, and allows clients to track the ingestion outcome.
 
@@ -18,6 +18,7 @@ Trades with the same version should replace the existing record.
 Trades with a maturity date before today are rejected.
 
 Trades whose maturity dates are in the past should automatically be marked expired.
+
 ---
 
 ## Functional Requirement
@@ -31,6 +32,7 @@ Trades whose maturity dates are in the past should automatically be marked expir
 4. All trade creation and update requests shall be validated against defined business rules prior to persistence. Requests that fail validation shall be rejected with appropriate error responses.
 
 ## Non Functional Requirement
+
 **Throughput Assumption**
 The problem statement specifies that up to 1,000 requests may be received by a store; however, it does not define the associated time unit. For design and capacity planning purposes, the system shall assume a target throughput of 1,000 requests per second, unless otherwise clarified.
 
@@ -100,24 +102,6 @@ Because the outcome of a trade (success or failure) is determined asynchronously
 
 ---
 
-## Running Locally
-
-### Prerequisites
-- Docker and Docker Compose
-
-```bash
-# Start all services (PostgreSQL, Kafka, API, Consumer)
-docker-compose up --build
-
-# Run database migrations
-docker-compose exec api alembic upgrade head
-```
-
-API available at: http://localhost:8000
-Swagger docs at: http://localhost:8000/docs
-
----
-
 ## API Endpoints
 
 | Method | Path | Response | Description |
@@ -128,71 +112,8 @@ Swagger docs at: http://localhost:8000/docs
 | `GET` | `/api/v1/trades/{trade_id}` | 200 | Get all versions of a trade |
 | `GET` | `/api/v1/health` | 200 | Health check (API + DB + Kafka) |
 
-### Example requests
-
-#### POST /api/v1/trades
-
-Response (202) includes `request_id`; use it with GET /api/v1/requests/{request_id} to poll status.
-
-```bash
-curl -X POST http://localhost:8000/api/v1/trades \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trade_id": "T1",
-    "version": 1,
-    "counterparty_id": "CP-1",
-    "book_id": "B1",
-    "maturity_date": "2026-05-20",
-    "created_date": "2024-01-15"
-  }'
-```
-
-#### GET /api/v1/requests/{request_id}
-
-Replace `<request_id>` with the UUID returned in the POST /api/v1/trades response.
-
-```bash
-curl -s http://localhost:8000/api/v1/requests/<request_id>
-```
-
-#### GET /api/v1/trades
-
-```bash
-curl -s http://localhost:8000/api/v1/trades
-```
-
-#### GET /api/v1/trades/{trade_id}
-
-```bash
-curl -s http://localhost:8000/api/v1/trades/T1
-```
-
-#### GET /api/v1/health
-
-Response: `{"status":"ok","db":"ok","kafka":"ok"}` when healthy, or `"status":"degraded"` when DB or Kafka is down.
-
-```bash
-curl -s http://localhost:8000/api/v1/health
-```
-
 ---
 
-## Running Tests
-
-```bash
-pip install -r requirements-dev.txt
-
-# Unit tests (no external services needed)
-pytest tests/unit --cov=app --cov-report=term-missing
-
-# Integration tests (needs PostgreSQL running)
-pytest tests/integration
-
-# All tests with coverage
-pytest --cov=app --cov-fail-under=85
-```
-
----
 ## Code Walkthrough
 
 1. API Layer
@@ -286,6 +207,91 @@ See [infra/](infra/) for CDK app and stack definitions.
 
 - **Structured logging**: JSON via `structlog`, with `correlation_id` on every request.
 - **Cloudwatch metric**: Cloudwatch metrics are enabled at load balancer level to for request count, 4xx error count, 5xx error count, latency. 
+---
+
+
+## Running Locally
+
+### Prerequisites
+- Docker and Docker Compose
+
+```bash
+# Start all services (PostgreSQL, Kafka, API, Consumer)
+docker-compose up --build
+
+# Run database migrations
+docker-compose exec api alembic upgrade head
+```
+
+API available at: http://localhost:8000
+Swagger docs at: http://localhost:8000/docs
+
+---
+
+### Example requests
+
+#### POST /api/v1/trades
+
+Response (202) includes `request_id`; use it with GET /api/v1/requests/{request_id} to poll status.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/trades \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trade_id": "T1",
+    "version": 1,
+    "counterparty_id": "CP-1",
+    "book_id": "B1",
+    "maturity_date": "2026-05-20",
+    "created_date": "2024-01-15"
+  }'
+```
+
+#### GET /api/v1/requests/{request_id}
+
+Replace `<request_id>` with the UUID returned in the POST /api/v1/trades response.
+
+```bash
+curl -s http://localhost:8000/api/v1/requests/<request_id>
+```
+
+#### GET /api/v1/trades
+
+```bash
+curl -s http://localhost:8000/api/v1/trades
+```
+
+#### GET /api/v1/trades/{trade_id}
+
+```bash
+curl -s http://localhost:8000/api/v1/trades/T1
+```
+
+#### GET /api/v1/health
+
+Response: `{"status":"ok","db":"ok","kafka":"ok"}` when healthy, or `"status":"degraded"` when DB or Kafka is down.
+
+```bash
+curl -s http://localhost:8000/api/v1/health
+```
+
+---
+
+## Running Tests
+
+```bash
+pip install -r requirements-dev.txt
+
+# Unit tests (no external services needed)
+pytest tests/unit --cov=app --cov-report=term-missing
+
+# Integration tests (needs PostgreSQL running)
+pytest tests/integration
+
+# All tests with coverage
+pytest --cov=app --cov-fail-under=85
+```
+
 ---
 
 ## Best Practices and Design Patterns Used
