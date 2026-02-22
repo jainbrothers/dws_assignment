@@ -9,6 +9,7 @@ class RequestStatus(str, Enum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
 
+
 class RequestStatusResponse(BaseModel):
     request_id: str
     status: RequestStatus

@@ -94,7 +94,9 @@ class TradeStoreStack(Stack):
         alb_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443), "HTTPS inbound")
         alb_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80), "HTTP redirect")
 
-        api_sg = ec2.SecurityGroup(self, "ApiSg", vpc=vpc, description=f"API ECS - {env}")
+        api_sg = ec2.SecurityGroup(
+            self, "ApiSg", vpc=vpc, description=f"API ECS - {env}"
+        )
         api_sg.add_ingress_rule(alb_sg, ec2.Port.tcp(8000), "From ALB")
 
         consumer_sg = ec2.SecurityGroup(
@@ -199,7 +201,8 @@ class TradeStoreStack(Stack):
 
         # Injected by CI/CD via: cdk deploy --context ecr_image_uri=...
         ecr_image_uri: str = (
-            self.node.try_get_context("ecr_image_uri") or "public.ecr.aws/nginx/nginx:latest"
+            self.node.try_get_context("ecr_image_uri")
+            or "public.ecr.aws/nginx/nginx:latest"
         )
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
 
@@ -224,7 +227,9 @@ class TradeStoreStack(Stack):
             ),
         )
         msk_bootstrap_cr.node.add_dependency(msk_cluster)
-        kafka_bootstrap = msk_bootstrap_cr.get_response_field("BootstrapBrokerStringTls")
+        kafka_bootstrap = msk_bootstrap_cr.get_response_field(
+            "BootstrapBrokerStringTls"
+        )
 
         shared_env = {
             "DB_HOST": db.db_instance_endpoint_address,
@@ -368,7 +373,27 @@ class TradeStoreStack(Stack):
             )
 
         # ── Stack outputs ─────────────────────────────────────────────────────
-        CfnOutput(self, "AlbDnsName", value=alb.load_balancer_dns_name, description="ALB DNS name")
-        CfnOutput(self, "DbEndpoint", value=db.db_instance_endpoint_address, description="RDS endpoint")
-        CfnOutput(self, "EcsClusterArn", value=cluster.cluster_arn, description="ECS cluster ARN")
-        CfnOutput(self, "KafkaBootstrap", value=kafka_bootstrap, description="MSK TLS bootstrap brokers")
+        CfnOutput(
+            self,
+            "AlbDnsName",
+            value=alb.load_balancer_dns_name,
+            description="ALB DNS name",
+        )
+        CfnOutput(
+            self,
+            "DbEndpoint",
+            value=db.db_instance_endpoint_address,
+            description="RDS endpoint",
+        )
+        CfnOutput(
+            self,
+            "EcsClusterArn",
+            value=cluster.cluster_arn,
+            description="ECS cluster ARN",
+        )
+        CfnOutput(
+            self,
+            "KafkaBootstrap",
+            value=kafka_bootstrap,
+            description="MSK TLS bootstrap brokers",
+        )

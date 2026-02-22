@@ -54,7 +54,9 @@ async def handle_message(
         try:
             MaturityDateValidator().validate(trade_create)
             current_max = await repo.get_max_version(trade_create.trade_id)
-            action = VersionValidator(current_max_version=current_max).validate(trade_create)
+            action = VersionValidator(current_max_version=current_max).validate(
+                trade_create
+            )
         except TradeValidationError as exc:
             logger.warning(
                 "trade_validation_failed",

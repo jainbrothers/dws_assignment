@@ -48,6 +48,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 @app.middleware("http")
 async def correlation_id_middleware(request: Request, call_next):
     correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
@@ -62,10 +63,12 @@ async def correlation_id_middleware(request: Request, call_next):
     return response
 
 
-
 @app.exception_handler(TradeValidationError)
-async def trade_validation_exception_handler(request: Request, exc: TradeValidationError):
+async def trade_validation_exception_handler(
+    request: Request, exc: TradeValidationError
+):
     return JSONResponse(status_code=400, content={"detail": exc.message})
+
 
 app.include_router(trades.router)
 app.include_router(requests_router.router)

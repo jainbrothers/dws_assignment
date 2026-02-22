@@ -66,7 +66,7 @@ class TestTradeService:
             repo=mock_repo, producer=mock_producer, request_repo=mock_request_repo
         )
         result = await service.ingest_trade(make_trade())
-        uuid.UUID(result.request_id) 
+        uuid.UUID(result.request_id)
 
     async def test_kafka_payload_includes_request_id_and_trade_fields(
         self, mock_repo, mock_producer, mock_request_repo
@@ -110,7 +110,9 @@ class TestTradeService:
         self, mock_repo, mock_producer, mock_request_repo
     ):
         """If DynamoDB write fails, return 503-style response and do NOT publish to Kafka."""
-        mock_request_repo.create_pending.side_effect = RuntimeError("DynamoDB unavailable")
+        mock_request_repo.create_pending.side_effect = RuntimeError(
+            "DynamoDB unavailable"
+        )
         service = TradeService(
             repo=mock_repo, producer=mock_producer, request_repo=mock_request_repo
         )

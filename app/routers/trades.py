@@ -52,9 +52,11 @@ async def ingest_trade(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=result.model_dump(),
             headers={
-                "Retry-After": str(result.retry_after_seconds)
-                if result.retry_after_seconds
-                else "60",
+                "Retry-After": (
+                    str(result.retry_after_seconds)
+                    if result.retry_after_seconds
+                    else "60"
+                ),
             },
         )
     return result

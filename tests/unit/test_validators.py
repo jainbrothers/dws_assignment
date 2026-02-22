@@ -48,6 +48,7 @@ class TestMaturityDateValidator:
         with pytest.raises(MaturityDateExpiredError):
             validator.validate(trade)
 
+
 class TestVersionValidator:
     def test_higher_version_passes(self):
         trade = make_trade(version=3)
