@@ -11,14 +11,14 @@ Provisions for both staging and prod:
 Runtime configuration injected through CDK context keys:
   certificate_arn – ACM certificate ARN for the HTTPS listener (optional)
 
-The Docker image is always built from the repo root Dockerfile and pushed to ECR
-during cdk deploy (no ecr_image_uri needed).
+Image source: ECR repository "trade-store" (created by this stack). GitHub Actions
+builds and pushes to trade-store:<sha> and trade-store:latest; ECS uses "latest".
+For local deploy, build and push to trade-store:latest first, then cdk deploy.
 """
 
 from __future__ import annotations
 
 import dataclasses
-import os
 
 import aws_cdk as cdk
 from aws_cdk import (
@@ -29,6 +29,7 @@ from aws_cdk import (
 )
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
@@ -202,24 +203,17 @@ class TradeStoreStack(Stack):
             container_insights=True,
         )
 
-        repo_root = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        # ECR repo for the app image (CI pushes to trade-store:<sha> and :latest).
+        ecr_repo = ecr.Repository(
+            self,
+            "EcrRepo",
+            repository_name="trade-store",
+            removal_policy=(
+                RemovalPolicy.RETAIN if env == "prod" else RemovalPolicy.DESTROY
+            ),
         )
-        # Exclude cdk.out and .venv so asset staging doesn't recurse or fill disk.
-        container_image = ecs.ContainerImage.from_asset(
-            repo_root,
-            exclude=[
-                "infra/cdk/cdk.out",
-                ".venv",
-                "venv",
-                "__pycache__",
-                ".git",
-                "*.pyc",
-                ".pytest_cache",
-                "htmlcov",
-                ".coverage",
-                "coverage.xml",
-            ],
+        container_image = ecs.ContainerImage.from_ecr_repository(
+            ecr_repo, tag="latest"
         )
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
 
