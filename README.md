@@ -4,6 +4,12 @@ A production-grade REST API for storing and managing financial trades, built wit
 
 ---
 
+## Assumptions
+
+The problem statement: *"Imagine a situation where thousands of trades are being sent to a single store, through any method of transmission. Our objective is to develop a trade store that organizes and stores each trade in a specific sequence."* It does not specify a time unit for "thousands" of trades. So I have assumed **1000 trades per second (TPS)** as the target scale to be on the safer side; the architecture (Kafka, async consumer, back-pressure) is designed with this throughput in mind.
+
+---
+
 ## Architecture Overview
 
 ```
@@ -180,3 +186,5 @@ Planned improvements:
 
 1. **API Gateway** — Introduce an API Gateway (e.g. AWS API Gateway) in front of the API so that clients depend on a stable contract and endpoint. Backend topology (ALB, ECS, service split) can then change without impacting clients.
 2. **Authentication and authorisation** — Add AuthN and AuthZ for public-facing APIs using Amazon Cognito (e.g. Cognito User Pools or JWT authoriser with API Gateway) so that only authenticated and authorised callers can access trade and request endpoints.
+3. **PlantUML diagrams** — Use PlantUML to add or extend sequence, class, and design diagrams (e.g. in `diagrams/`) for key flows and components.
+4. **DynamoDB TTL** — Introduce or tune TTL on the request-lifecycle table so that completed or stale request records expire automatically and DynamoDB storage and read costs stay contained.
