@@ -29,7 +29,6 @@ from aws_cdk import (
 )
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
@@ -202,13 +201,6 @@ class TradeStoreStack(Stack):
             vpc=vpc,
             cluster_name=f"trade-store-{env}",
             container_insights=True,
-        )
-
-        ecr.Repository(
-            self,
-            "EcrRepo",
-            repository_name="trade-store",
-            removal_policy=RemovalPolicy.RETAIN,
         )
 
         repo_root = Path(__file__).resolve().parents[3]
