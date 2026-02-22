@@ -35,9 +35,7 @@ async def lifespan(app: FastAPI):
         logger.info("startup_step", step="kafka_producer_start", status="attempted")
         try:
             await kafka_producer_module.start_producer()
-            logger.info(
-                "startup_step", step="kafka_producer_start", status="completed"
-            )
+            logger.info("startup_step", step="kafka_producer_start", status="completed")
         except Exception as exc:
             logger.warning(
                 "startup_step",
