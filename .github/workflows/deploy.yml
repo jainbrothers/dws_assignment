@@ -7,7 +7,7 @@ on:
     branches: [main, staging]
 
 env:
-  AWS_REGION: eu-west-1
+  AWS_REGION: ap-south-1
   ECR_REPOSITORY: trade-store
 
 jobs:
@@ -27,6 +27,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} 2>/dev/null || \
+          aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         id: login-ecr
