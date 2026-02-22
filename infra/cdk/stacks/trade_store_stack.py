@@ -292,10 +292,8 @@ class TradeStoreStack(Stack):
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
             ),
             assign_public_ip=False,
-            deployment_configuration=ecs.DeploymentConfiguration(
-                minimum_healthy_percent=50 if env == "prod" else 0,
-                maximum_percent=200,
-            ),
+            min_healthy_percent=50 if env == "prod" else 0,
+            max_healthy_percent=200,
         )
 
         # ── Consumer Fargate Task ─────────────────────────────────────────────
