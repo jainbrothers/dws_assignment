@@ -180,3 +180,12 @@ Planned improvements:
 
 1. **API Gateway** — Introduce an API Gateway (e.g. AWS API Gateway) in front of the API so that clients depend on a stable contract and endpoint. Backend topology (ALB, ECS, service split) can then change without impacting clients.
 2. **Authentication and authorisation** — Add AuthN and AuthZ for public-facing APIs using Amazon Cognito (e.g. Cognito User Pools or JWT authoriser with API Gateway) so that only authenticated and authorised callers can access trade and request endpoints.
+3. **DynamoDB TTL** — Enable TTL on the DynamoDB table (e.g. for request/audit records) to expire old items automatically and reduce storage cost.
+4. **Hotfix workflow** — Add a GitHub Actions workflow that can be triggered manually (workflow_dispatch) with a branch selector to deploy a chosen branch (e.g. for hotfixes without merging to main/staging first).
+5. **Create UML diagram** -  Add a UML diagram (e.g. component or deployment diagram for the infra/system) to document architecture.
+6. **Introduce rate limiting** - Required: Business Input.
+7. **Only support HTTPS** - Remove support for HTTP when certification is not supplied.
+8. **Tighten the egress policy** - Right now all outbound traffic is allowed.
+9. **IAM based RDS auth** - Right now it is password based.
+
+
