@@ -11,14 +11,14 @@ Provisions for both staging and prod:
 Runtime configuration injected through CDK context keys:
   certificate_arn – ACM certificate ARN for the HTTPS listener (optional)
 
-Image source: ECR repository "trade-store" (created by this stack). GitHub Actions
-builds and pushes to trade-store:<sha> and trade-store:latest; ECS uses "latest".
-For local deploy, build and push to trade-store:latest first, then cdk deploy.
+Image source: built and pushed by the stack via DockerImageAsset (repo root
+Dockerfile). Run cdk deploy from repo root or infra/cdk; Docker must be available.
 """
 
 from __future__ import annotations
 
 import dataclasses
+from pathlib import Path
 
 import aws_cdk as cdk
 from aws_cdk import (
@@ -29,7 +29,7 @@ from aws_cdk import (
 )
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_ecr as ecr
+from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
@@ -203,16 +203,14 @@ class TradeStoreStack(Stack):
             container_insights=True,
         )
 
-        # ECR repo for the app image (CI pushes to trade-store:<sha> and :latest).
-        ecr_repo = ecr.Repository(
+        repo_root = Path(__file__).resolve().parents[3]
+        app_image = ecr_assets.DockerImageAsset(
             self,
-            "EcrRepo",
-            repository_name="trade-store",
-            removal_policy=(
-                RemovalPolicy.RETAIN if env == "prod" else RemovalPolicy.DESTROY
-            ),
+            "AppImage",
+            directory=str(repo_root),
+            file="Dockerfile",
         )
-        container_image = ecs.ContainerImage.from_ecr_repository(ecr_repo, tag="latest")
+        container_image = ecs.ContainerImage.from_docker_image_asset(app_image)
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
 
         # Kafka bootstrap servers TLS endpoint: AWS::MSK::Cluster no longer returns it via GetAtt,
@@ -293,6 +291,10 @@ class TradeStoreStack(Stack):
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
             ),
             assign_public_ip=False,
+            deployment_configuration=ecs.DeploymentConfiguration(
+                minimum_healthy_percent=50 if env == "prod" else 0,
+                maximum_percent=200,
+            ),
         )
 
         # ── Consumer Fargate Task ─────────────────────────────────────────────
@@ -322,7 +324,7 @@ class TradeStoreStack(Stack):
         db_secret.grant_read(consumer_task.task_role)
         request_table.grant_read_write_data(consumer_task.task_role)
 
-        ecs.FargateService(
+        consumer_service = ecs.FargateService(
             self,
             "ConsumerService",
             cluster=cluster,
