@@ -212,9 +212,7 @@ class TradeStoreStack(Stack):
                 RemovalPolicy.RETAIN if env == "prod" else RemovalPolicy.DESTROY
             ),
         )
-        container_image = ecs.ContainerImage.from_ecr_repository(
-            ecr_repo, tag="latest"
-        )
+        container_image = ecs.ContainerImage.from_ecr_repository(ecr_repo, tag="latest")
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
 
         # Kafka bootstrap servers TLS endpoint: AWS::MSK::Cluster no longer returns it via GetAtt,
