@@ -51,12 +51,16 @@ class TestTradeRepository:
 
     async def test_upsert_updates_existing_trade(self, session):
         repo = TradeRepository(session)
-        trade_v1 = make_trade_model(trade_id="T2", version=1, maturity_date=date.today() + timedelta(days=10))
+        trade_v1 = make_trade_model(
+            trade_id="T2", version=1, maturity_date=date.today() + timedelta(days=10)
+        )
         await repo.upsert(trade_v1)
         await session.commit()
 
         # Same trade_id + version but different counterparty → should update
-        trade_v1_updated = make_trade_model(trade_id="T2", version=1, maturity_date=date.today() + timedelta(days=20))
+        trade_v1_updated = make_trade_model(
+            trade_id="T2", version=1, maturity_date=date.today() + timedelta(days=20)
+        )
         trade_v1_updated.counterparty_id = "CP-99"
         await repo.upsert(trade_v1_updated)
         await session.commit()
@@ -100,8 +104,14 @@ class TestTradeRepository:
 
     async def test_expired_is_computed_correctly(self, session):
         repo = TradeRepository(session)
-        past_trade = make_trade_model(trade_id="T_PAST", version=1, maturity_date=date(2014, 5, 20))
-        future_trade = make_trade_model(trade_id="T_FUTURE", version=1, maturity_date=date.today() + timedelta(days=30))
+        past_trade = make_trade_model(
+            trade_id="T_PAST", version=1, maturity_date=date(2014, 5, 20)
+        )
+        future_trade = make_trade_model(
+            trade_id="T_FUTURE",
+            version=1,
+            maturity_date=date.today() + timedelta(days=30),
+        )
         await repo.upsert(past_trade)
         await repo.upsert(future_trade)
         await session.commit()

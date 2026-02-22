@@ -26,7 +26,6 @@ and do not need to be stored in this file.
 
 import aws_cdk as cdk
 from aws_cdk import aws_ec2 as ec2
-
 from stacks.trade_store_stack import TradeStoreConfig, TradeStoreStack
 
 app = cdk.App()
@@ -38,7 +37,9 @@ TradeStoreStack(
     config=TradeStoreConfig(
         environment="staging",
         vpc_cidr="10.1.0.0/16",
-        rds_instance_type=ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+        rds_instance_type=ec2.InstanceType.of(
+            ec2.InstanceClass.T3, ec2.InstanceSize.MICRO
+        ),
         multi_az=False,
         kafka_instance_type="kafka.t3.small",
         kafka_broker_count=2,
@@ -60,7 +61,9 @@ TradeStoreStack(
     config=TradeStoreConfig(
         environment="prod",
         vpc_cidr="10.0.0.0/16",
-        rds_instance_type=ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
+        rds_instance_type=ec2.InstanceType.of(
+            ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM
+        ),
         multi_az=True,
         kafka_instance_type="kafka.m5.large",
         kafka_broker_count=3,

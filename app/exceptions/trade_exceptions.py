@@ -11,4 +11,4 @@ class MaturityDateExpiredError(TradeValidationError):
 
 
 class LowerVersionError(TradeValidationError):
-    """Raised when an incoming trade version is lower than the current stored version."""
+    """Raised when incoming trade version is lower than the current stored version."""

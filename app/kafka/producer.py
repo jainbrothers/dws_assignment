@@ -32,7 +32,9 @@ async def stop_producer() -> None:
 
 async def send_trade(topic: str, trade_id: str, payload: dict) -> None:
     if _producer is None:
-        raise RuntimeError("Kafka producer not initialised. Call start_producer() first.")
+        raise RuntimeError(
+            "Kafka producer not initialised. Call start_producer() first."
+        )
     await _producer.send_and_wait(topic, key=trade_id, value=payload)
     logger.info("kafka_message_sent", topic=topic, trade_id=trade_id)
 

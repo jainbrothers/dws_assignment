@@ -10,8 +10,9 @@ from app.config import settings
 from app.exceptions.trade_exceptions import TradeValidationError
 from app.kafka import producer as kafka_producer_module
 from app.logging_config import configure_logging, get_logger
-from app.routers import health, trades
+from app.routers import health
 from app.routers import requests as requests_router
+from app.routers import trades
 
 configure_logging()
 logger = get_logger(__name__)
@@ -43,10 +44,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Trade Store API",
-    description="REST API for storing and managing financial trades with Kafka back-pressure.",
+    description=(
+        "REST API for storing and managing financial trades with Kafka back-pressure."
+    ),
     version="1.0.0",
     lifespan=lifespan,
 )
+
 
 @app.middleware("http")
 async def correlation_id_middleware(request: Request, call_next):
@@ -62,10 +66,12 @@ async def correlation_id_middleware(request: Request, call_next):
     return response
 
 
-
 @app.exception_handler(TradeValidationError)
-async def trade_validation_exception_handler(request: Request, exc: TradeValidationError):
+async def trade_validation_exception_handler(
+    request: Request, exc: TradeValidationError
+):
     return JSONResponse(status_code=400, content={"detail": exc.message})
+
 
 app.include_router(trades.router)
 app.include_router(requests_router.router)

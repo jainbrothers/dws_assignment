@@ -6,8 +6,6 @@ import uuid
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from tests.conftest import trade_payload
 
 
@@ -48,7 +46,9 @@ class TestPostTrade:
         )
         await db_session.commit()
 
-        resp = await client.post("/api/v1/trades", json=trade_payload(trade_id="T2", version=1))
+        resp = await client.post(
+            "/api/v1/trades", json=trade_payload(trade_id="T2", version=1)
+        )
         assert resp.status_code == 202
 
     async def test_invalid_payload_returns_422(self, client):
@@ -60,7 +60,9 @@ class TestPostTrade:
         assert resp.status_code == 202
         mock_dynamodb_client.put_item.assert_awaited_once()
 
-    async def test_kafka_not_published_if_ddb_fails(self, client, mock_dynamodb_client, mock_kafka_send):
+    async def test_kafka_not_published_if_ddb_fails(
+        self, client, mock_dynamodb_client, mock_kafka_send
+    ):
         mock_dynamodb_client.put_item.side_effect = RuntimeError("DynamoDB unavailable")
         resp = await client.post("/api/v1/trades", json=trade_payload())
         assert resp.status_code == 503
@@ -183,8 +185,13 @@ class TestGetTrades:
 
 
 class TestHealthEndpoint:
-    @patch("app.routers.health.kafka_producer_module.get_producer", return_value=MagicMock())
-    async def test_health_returns_200_ok_when_db_and_kafka_ok(self, _mock_get_producer, client):
+    @patch(
+        "app.routers.health.kafka_producer_module.get_producer",
+        return_value=MagicMock(),
+    )
+    async def test_health_returns_200_ok_when_db_and_kafka_ok(
+        self, _mock_get_producer, client
+    ):
         resp = await client.get("/api/v1/health")
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
@@ -192,7 +199,9 @@ class TestHealthEndpoint:
         assert resp.json()["kafka"] == "ok"
 
     async def test_health_returns_degraded_when_kafka_not_initialised(self, client):
-        with patch("app.routers.health.kafka_producer_module.get_producer", return_value=None):
+        with patch(
+            "app.routers.health.kafka_producer_module.get_producer", return_value=None
+        ):
             resp = await client.get("/api/v1/health")
         assert resp.status_code == 200
         assert resp.json()["status"] == "degraded"

@@ -1,8 +1,6 @@
 from datetime import date, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from app.kafka.consumer import handle_message
 
 
@@ -11,7 +9,7 @@ def make_payload(
     version: int = 1,
     action: str = "insert",
     maturity_date: date = None,
-    request_id: str = "req-test-123", #TODO: Ajit, make it random number
+    request_id: str = "req-test-123",  # TODO: Ajit, make it random number
 ) -> dict:
     md = maturity_date or date.today() + timedelta(days=30)
     return {
@@ -92,7 +90,7 @@ class TestHandleMessage:
         mock_ddb.update_item.assert_awaited_once()
 
         update_call = mock_ddb.update_item.call_args[1]
-        
+
         assert update_call["ExpressionAttributeValues"][":status"] == {"S": "FAILED"}
 
     async def test_same_version_upserts_successfully(self):
@@ -111,7 +109,6 @@ class TestHandleMessage:
         mock_repo.upsert.assert_awaited_once()
 
     async def test_no_dynamodb_client_still_persists(self):
-        """Consumer continues to work even without a DynamoDB client (graceful degradation)."""
         mock_repo = AsyncMock()
         mock_repo.get_max_version = AsyncMock(return_value=None)
         mock_session_factory, _ = make_session_factory(mock_repo)

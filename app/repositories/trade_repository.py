@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from sqlalchemy import func, select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.trade import Trade
@@ -44,8 +43,6 @@ class TradeRepository:
 
     async def get_all_versions(self, trade_id: str) -> List[Trade]:
         result = await self._session.execute(
-            select(Trade)
-            .where(Trade.trade_id == trade_id)
-            .order_by(Trade.version)
+            select(Trade).where(Trade.trade_id == trade_id).order_by(Trade.version)
         )
         return list(result.scalars().all())
