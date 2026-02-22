@@ -40,6 +40,9 @@ jobs:
         run: |
           docker build -t ${{ steps.meta.outputs.image_tag }} .
           docker push ${{ steps.meta.outputs.image_tag }}
+          # Tag and push as latest so ECS (task def uses trade-store:latest) pulls this image
+          docker tag ${{ steps.meta.outputs.image_tag }} ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
   deploy-staging:
     name: Deploy to Staging
