@@ -209,6 +209,7 @@ class TradeStoreStack(Stack):
             "AppImage",
             directory=str(repo_root),
             file="Dockerfile",
+            exclude=[".git", "**/cdk.out", "**/.git"],
         )
         container_image = ecs.ContainerImage.from_docker_image_asset(app_image)
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
