@@ -46,7 +46,9 @@ class RequestRepository:
             await self._client.update_item(
                 TableName=self._table_name,
                 Key={"PK": {"S": request_id}},
-                UpdateExpression="SET #s = :status, updated_at = :ts, failure_reason = :reason",
+                UpdateExpression=(
+                    "SET #s = :status, updated_at = :ts, failure_reason = :reason"
+                ),
                 ExpressionAttributeNames={"#s": "status"},
                 ExpressionAttributeValues={
                     ":status": {"S": status},

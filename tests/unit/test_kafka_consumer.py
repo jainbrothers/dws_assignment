@@ -1,8 +1,6 @@
 from datetime import date, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from app.kafka.consumer import handle_message
 
 
@@ -111,7 +109,6 @@ class TestHandleMessage:
         mock_repo.upsert.assert_awaited_once()
 
     async def test_no_dynamodb_client_still_persists(self):
-        """Consumer continues to work even without a DynamoDB client (graceful degradation)."""
         mock_repo = AsyncMock()
         mock_repo.get_max_version = AsyncMock(return_value=None)
         mock_session_factory, _ = make_session_factory(mock_repo)

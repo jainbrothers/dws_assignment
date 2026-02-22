@@ -43,7 +43,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Trade Store API",
-    description="REST API for storing and managing financial trades with Kafka back-pressure.",
+    description=(
+        "REST API for storing and managing financial trades with Kafka back-pressure."
+    ),
     version="1.0.0",
     lifespan=lifespan,
 )

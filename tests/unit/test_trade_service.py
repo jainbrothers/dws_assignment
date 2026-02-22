@@ -109,7 +109,6 @@ class TestTradeService:
     async def test_ddb_failure_returns_temporary_failure_and_no_kafka(
         self, mock_repo, mock_producer, mock_request_repo
     ):
-        """If DynamoDB write fails, return 503-style response and do NOT publish to Kafka."""
         mock_request_repo.create_pending.side_effect = RuntimeError(
             "DynamoDB unavailable"
         )

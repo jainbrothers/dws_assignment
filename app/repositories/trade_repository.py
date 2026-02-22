@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from sqlalchemy import func, select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.trade import Trade

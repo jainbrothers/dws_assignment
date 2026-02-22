@@ -6,8 +6,6 @@ import uuid
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from tests.conftest import trade_payload
 
 
