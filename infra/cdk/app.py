@@ -1,36 +1,10 @@
 #!/usr/bin/env python3
-"""
-CDK app entry point.
-
-Usage
------
-Install CDK dependencies first:
-    pip install -r requirements.txt
-
-Bootstrap (once per account/region):
-    cdk bootstrap aws://<ACCOUNT_ID>/ap-south-1
-
-Deploy staging:
-    cdk deploy TradeStore-Staging \
-        --context ecr_image_uri=<ECR_URI> \
-        --context certificate_arn=<ACM_ARN>
-
-Deploy prod:
-    cdk deploy TradeStore-Prod \
-        --context ecr_image_uri=<ECR_URI> \
-        --context certificate_arn=<ACM_ARN>
-
-The ecr_image_uri and certificate_arn context values are injected by CI/CD
-and do not need to be stored in this file.
-"""
-
 import aws_cdk as cdk
 from aws_cdk import aws_ec2 as ec2
 from stacks.trade_store_stack import TradeStoreConfig, TradeStoreStack
 
 app = cdk.App()
 
-# ── Staging ───────────────────────────────────────────────────────────────────
 TradeStoreStack(
     app,
     "TradeStore-Staging",
@@ -54,7 +28,6 @@ TradeStoreStack(
     env=cdk.Environment(region="ap-south-1"),
 )
 
-# ── Production ────────────────────────────────────────────────────────────────
 TradeStoreStack(
     app,
     "TradeStore-Prod",

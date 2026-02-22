@@ -20,8 +20,9 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("application_starting", environment=settings.environment)
+    logger.info("startup_step", step="lifespan_started", status="attempted")
 
+    logger.info("startup_step", step="dynamodb_client", status="attempted")
     session = aioboto3.Session()
     async with session.client(
         "dynamodb",
@@ -29,17 +30,28 @@ async def lifespan(app: FastAPI):
         endpoint_url=settings.dynamodb_endpoint_url or None,
     ) as dynamodb_client:
         app.state.dynamodb_client = dynamodb_client
+        logger.info("startup_step", step="dynamodb_client", status="completed")
 
+        logger.info("startup_step", step="kafka_producer_start", status="attempted")
         try:
             await kafka_producer_module.start_producer()
+            logger.info("startup_step", step="kafka_producer_start", status="completed")
         except Exception as exc:
-            logger.warning("kafka_producer_start_failed", error=str(exc))
+            logger.warning(
+                "startup_step",
+                step="kafka_producer_start",
+                status="failed",
+                error=str(exc),
+            )
 
+        logger.info("startup_step", step="app_ready", status="completed")
         yield
 
+        logger.info("startup_step", step="kafka_producer_stop", status="attempted")
         await kafka_producer_module.stop_producer()
+        logger.info("startup_step", step="kafka_producer_stop", status="completed")
 
-    logger.info("application_stopped")
+    logger.info("startup_step", step="lifespan_stopped", status="completed")
 
 
 app = FastAPI(
