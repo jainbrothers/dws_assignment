@@ -23,17 +23,17 @@ from aws_cdk import (
     Duration,
     RemovalPolicy,
     Stack,
-    aws_dynamodb as dynamodb,
-    aws_ec2 as ec2,
-    aws_ecs as ecs,
-    aws_elasticloadbalancingv2 as elbv2,
-    aws_iam as iam,
-    aws_logs as logs,
-    aws_msk as msk,
-    aws_rds as rds,
-    aws_secretsmanager as secretsmanager,
-    custom_resources as cr,
 )
+from aws_cdk import aws_dynamodb as dynamodb
+from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_logs as logs
+from aws_cdk import aws_msk as msk
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import custom_resources as cr
 from constructs import Construct
 
 

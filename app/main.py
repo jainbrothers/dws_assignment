@@ -10,8 +10,9 @@ from app.config import settings
 from app.exceptions.trade_exceptions import TradeValidationError
 from app.kafka import producer as kafka_producer_module
 from app.logging_config import configure_logging, get_logger
-from app.routers import health, trades
+from app.routers import health
 from app.routers import requests as requests_router
+from app.routers import trades
 
 configure_logging()
 logger = get_logger(__name__)
