@@ -34,7 +34,7 @@ jobs:
 
       - name: Deploy stack (staging)
         run: |
-          cd infra/cdk && cdk deploy TradeStore-Staging --require-approval never
+          cd infra/cdk && cdk deploy TradeStore-Staging --require-approval never --output $RUNNER_TEMP/cdk-out
 
       - name: Smoke test staging
         run: |
@@ -70,7 +70,7 @@ jobs:
 
       - name: Deploy stack (production)
         run: |
-          cd infra/cdk && cdk deploy TradeStore-Prod --require-approval never
+          cd infra/cdk && cdk deploy TradeStore-Prod --require-approval never --output $RUNNER_TEMP/cdk-out
 
       - name: Smoke test production
         run: |
