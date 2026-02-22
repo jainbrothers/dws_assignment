@@ -9,13 +9,16 @@ Provisions for both staging and prod:
   - Auto-scaling on the API service (prod only)
 
 Runtime configuration injected through CDK context keys:
-  ecr_image_uri   – ECR image to deploy (set by CI/CD)
   certificate_arn – ACM certificate ARN for the HTTPS listener (optional)
+
+The Docker image is always built from the repo root Dockerfile and pushed to ECR
+during cdk deploy (no ecr_image_uri needed).
 """
 
 from __future__ import annotations
 
 import dataclasses
+import os
 
 import aws_cdk as cdk
 from aws_cdk import (
@@ -199,10 +202,24 @@ class TradeStoreStack(Stack):
             container_insights=True,
         )
 
-        # Injected by CI/CD via: cdk deploy --context ecr_image_uri=...
-        ecr_image_uri: str = (
-            self.node.try_get_context("ecr_image_uri")
-            or "public.ecr.aws/nginx/nginx:latest"
+        repo_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        )
+        # Exclude cdk.out and .venv so asset staging doesn't recurse or fill disk.
+        container_image = ecs.ContainerImage.from_asset(
+            repo_root,
+            exclude=[
+                "infra/cdk/cdk.out",
+                ".venv",
+                "venv",
+                "__pycache__",
+                ".git",
+                "*.pyc",
+                ".pytest_cache",
+                "htmlcov",
+                ".coverage",
+                "coverage.xml",
+            ],
         )
         certificate_arn: str | None = self.node.try_get_context("certificate_arn")
 
@@ -254,7 +271,7 @@ class TradeStoreStack(Stack):
         )
         api_task.add_container(
             "api",
-            image=ecs.ContainerImage.from_registry(ecr_image_uri),
+            image=container_image,
             command=["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
             environment=shared_env,
             secrets=shared_secrets,
@@ -266,7 +283,7 @@ class TradeStoreStack(Stack):
                     "ApiLogs",
                     log_group_name=f"/ecs/trade-store-{env}/api",
                     retention=logs.RetentionDays.ONE_MONTH,
-                    removal_policy=RemovalPolicy.DESTROY,
+                    removal_policy=RemovalPolicy.RETAIN,
                 ),
             ),
         )
@@ -295,7 +312,7 @@ class TradeStoreStack(Stack):
         )
         consumer_task.add_container(
             "consumer",
-            image=ecs.ContainerImage.from_registry(ecr_image_uri),
+            image=container_image,
             command=["python", "-m", "app.kafka.consumer"],
             environment=shared_env,
             secrets=shared_secrets,
@@ -306,7 +323,7 @@ class TradeStoreStack(Stack):
                     "ConsumerLogs",
                     log_group_name=f"/ecs/trade-store-{env}/consumer",
                     retention=logs.RetentionDays.ONE_MONTH,
-                    removal_policy=RemovalPolicy.DESTROY,
+                    removal_policy=RemovalPolicy.RETAIN,
                 ),
             ),
         )
@@ -359,7 +376,6 @@ class TradeStoreStack(Stack):
             ),
         )
 
-        # ── Auto-scaling (prod only) ──────────────────────────────────────────
         if config.enable_autoscaling:
             scaling = api_service.auto_scale_task_count(
                 min_capacity=config.autoscaling_min,
