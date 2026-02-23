@@ -245,9 +245,12 @@ class TradeStoreStack(Stack):
             "DB_NAME": "trade_store",
             "DB_USER": "trade_user",
             "KAFKA_BOOTSTRAP_SERVERS": kafka_bootstrap,
+            "KAFKA_SECURITY_PROTOCOL": "SSL",
+            "KAFKA_TOPIC_REPLICATION_FACTOR": str(config.kafka_broker_count),
             "DYNAMODB_TABLE_NAME": request_table.table_name,
             "AWS_REGION": self.region,
             "ENVIRONMENT": env,
+            "LOG_LEVEL": "INFO",
         }
         shared_secrets = {
             "DB_PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),

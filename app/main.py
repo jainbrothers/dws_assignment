@@ -15,7 +15,7 @@ from app.routers import requests as requests_router
 from app.routers import trades
 
 configure_logging()
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 @asynccontextmanager

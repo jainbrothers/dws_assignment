@@ -4,7 +4,7 @@ from typing import Optional
 
 from app.logging_config import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 _TTL_SECONDS = 7 * 24 * 3600  # 7 days
 
