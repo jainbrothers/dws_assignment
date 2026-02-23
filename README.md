@@ -385,5 +385,3 @@ Source PlantUML diagrams are in [`uml_diagrams/`](uml_diagrams/):
 - **[sequence_flow.puml](uml_diagrams/sequence_flow.puml)** — request/response and Kafka flow
 - **[class_diagram.puml](uml_diagrams/class_diagram.puml)** — class structure
 - **[architecture.puml](uml_diagrams/architecture.puml)** — system architecture
-
-
