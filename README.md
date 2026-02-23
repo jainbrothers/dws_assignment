@@ -378,8 +378,12 @@ Enable TTL on the DynamoDB table (e.g. for request/audit records) to expire old 
 
 Add a GitHub Actions workflow that can be triggered manually (workflow_dispatch) with a branch selector to deploy a chosen branch (e.g. for hotfixes without merging to main/staging first)
 
-## Todo
+## UML diagrams
 
-1. **Create UML diagram** -  Add a UML diagram (e.g. component or deployment diagram for the infra/system) to document architecture.
+Source PlantUML diagrams are in [`uml_diagrams/`](uml_diagrams/):
+
+- **[sequence_flow.puml](uml_diagrams/sequence_flow.puml)** — request/response and Kafka flow
+- **[class_diagram.puml](uml_diagrams/class_diagram.puml)** — class structure
+- **[architecture.puml](uml_diagrams/architecture.puml)** — system architecture
 
 
