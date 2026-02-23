@@ -1,0 +1,52 @@
+@startuml ClassDiagram
+
+' API Layer
+class FastAPIController {
+  +post_trade()
+  +get_trades()
+  +get_trade_by_id()
+  +get_request_status()
+}
+ 
+note right of FastAPIController
+  Uses Pydantic models to
+  validate request shape/types
+end note
+
+' Business/Processing
+class KafkaProducer {
+  +publish_trade()
+}
+
+class KafkaConsumer {
+  +consume()
+  +process_trade()
+}
+
+class BusinessValidator {
+  +validate_version()
+}
+
+' Persistence
+class TradeRepository {
+  +get_latest_version()
+  +upsert_trade()
+}
+
+class RequestStatusStore {
+  +write_pending()
+  +update_status()
+  +read_status()
+}
+
+' Relations
+FastAPIController --> KafkaProducer
+FastAPIController --> RequestStatusStore
+
+KafkaConsumer --> BusinessValidator
+KafkaConsumer --> TradeRepository
+KafkaConsumer --> RequestStatusStore
+
+BusinessValidator --> TradeRepository
+
+@enduml

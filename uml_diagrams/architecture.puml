@@ -1,0 +1,20 @@
+@startuml Architecture
+
+skinparam backgroundColor white
+
+actor Client
+rectangle "FastAPI API" as FastAPI
+database "DynamoDB\n(Request Status)" as DDB
+queue "Kafka Topic\n(trades-inbound)" as Kafka
+rectangle "Consumer Worker" as Consumer
+database "PostgreSQL\n(Trade Store)" as PG
+
+Client --> FastAPI: POST /api/v1/trades
+FastAPI --> DDB: Write PENDING
+FastAPI --> Kafka: Publish trade
+Kafka --> Consumer: Consume messages
+Consumer --> PG: Upsert trade
+Consumer --> DDB: Update status
+Client --> FastAPI: GET /api/v1/requests/{id}
+
+@enduml
