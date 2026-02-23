@@ -1,0 +1,35 @@
+@startuml SequenceFlow
+
+actor Client
+participant FastAPI
+participant DDB as "DynamoDB\n(Request Status)"
+participant Kafka
+participant Consumer
+participant PG as "PostgreSQL"
+
+== Client submits a trade ==
+Client -> FastAPI: POST /api/v1/trades
+
+alt API basic validations
+    FastAPI -> FastAPI: Validate schema and maturity date
+end
+
+FastAPI -> DDB: Write status = PENDING
+FastAPI -> Kafka: Publish trade event
+FastAPI --> Client: 202 Accepted
+
+== Kafka consumer processes the trade ==
+Kafka -> Consumer: Trade event
+Consumer -> Consumer: Validate business rules
+note right: Version check, upsert logic,\nexisting version semantics
+
+Consumer -> PG: Upsert trade
+Consumer -> DDB: Update status (SUCCESS/FAILED)
+Consumer -> Kafka: Commit offset
+
+== Client checks status ==
+Client -> FastAPI: GET /api/v1/requests/{request_id}
+FastAPI -> DDB: Read request status
+FastAPI --> Client: RequestStatusResponse
+
+@enduml
