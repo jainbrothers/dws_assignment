@@ -1,3 +1,5 @@
+# Deploy is gated by repo variable ENABLE_DEPLOY.
+# To re-enable: set ENABLE_DEPLOY = 'true' in Settings → Secrets and variables → Actions → Variables.
 name: Deploy
 
 on:
@@ -13,7 +15,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'staging' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'staging' && vars.ENABLE_DEPLOY == 'true' }}
     environment: staging
 
     steps:
@@ -54,7 +56,7 @@ jobs:
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && vars.ENABLE_DEPLOY == 'true' }}
     environment: production  # Requires manual approval via GitHub Environment protection rules
 
     steps:
