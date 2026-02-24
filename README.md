@@ -23,7 +23,7 @@ Trades whose maturity dates are in the past should automatically be marked expir
 
 ## Functional Requirement
 
-1. The system shall provide an interface for users to submit requests to create new trade recordsm (POST /api/v1/trades)
+1. The system shall provide an interface for users to submit requests to create new trade records (POST /api/v1/trades)
 
 2. The system shall provide an interface for users to submit requests to modify existing trade records (POST /api/v1/trades).
 
