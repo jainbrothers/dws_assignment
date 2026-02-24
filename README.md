@@ -91,7 +91,7 @@ The trade store uses a **SQL database (PostgreSQL)** so that future requirements
 
 ### Why asynchronous write path and Kafka
 
-The target throughput (e.g. **1000 TPS**) makes it undesirable to write directly to the relational database on the request path: that would couple latency and availability of the API to the database and make scaling harder. By publishing accepted trades to **Kafka**, the API responds quickly and Kafka provides **back-pressure**: if the consumer cannot keep up, Kafka buffers messages and the system degrades gracefully under load rather than overloading the database.
+The target throughput (e.g. **1000 TPS**) makes it undesirable to write directly to the relational database on the request path: that would couple latency and availability of the API to the database and make scaling harder. By publishing accepted trades to **Kafka**, the API responds quickly and Kafka provides **back-pressure**: if the consumer cannot keep up, Kafka buffers messages and the system degrades gracefully under load rather than overloading the database. The Kafka topic is partitioned by trade_id. As a result, all messages with the same trade_id are routed to the same partition, where Kafka guarantees strict ordering within that partition. This ensures in-order processing for a given trade_id and prevents race conditions at the individual trade (record) level, provided there is a single consumer per partition in the consumer group.
 
 ### Why DynamoDB for request lifecycle
 
