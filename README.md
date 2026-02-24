@@ -34,10 +34,10 @@ Trades whose maturity dates are in the past should automatically be marked expir
 ## Non Functional Requirement
 
 **Throughput Assumption**
-The problem statement specifies that up to 1,000 requests may be received by a store; however, it does not define the associated time unit. For design and capacity planning purposes, the system shall assume a target throughput of 1,000 requests per second, unless otherwise clarified.
+The problem statement specifies that up to 1,000 requests may be received by a store; however, it does not define the associated time unit. For design and capacity planning purposes, the system shall assume a target throughput of 1,000 requests per second.
 
 **Availability and Latency**
-The system shall ensure high availability for accepting user requests. The response time for acknowledging trade requests shall not exceed 200 milliseconds under normal operating conditions.
+The system shall ensure high availability for accepting user requests. The response time for acknowledging trade requests shall not exceed 200 milliseconds for p95.
 
 **Consistency**
 The system shall enforce strong data consistency for trade creation and update operations to ensure data integrity within the database.
@@ -102,7 +102,7 @@ For tracking the request lifecycle (from acceptance to final outcome), the syste
 
 Unlike in-memory datastores such as Redis, DynamoDB persists data durably. Because the request lifecycle must be reliably queryable over time, data loss is not acceptable, making a persistent store essential.
 
-In this architecture, trade persistence is handled asynchronously by a consumer component. DynamoDB is used specifically for request status tracking (e.g., PENDING → SUCCESS/FAILED) because it supports high write/read throughput for status updates and lookups, while minimizing operational complexity in a production-oriented environment.
+In this architecture, trade persistence is handled asynchronously by a consumer component. DynamoDB is used specifically for request status tracking (e.g., PENDING → SUCCESS/FAILED) because it supports 3000 RCU and 1000 WCU per partions which is needed for status updates and lookups, while minimizing operational complexity in a production-oriented environment. As per design, partition key is UUID (randomly generated) ID, it is highly scalable even beyond current scale which 1000 TPS as DDB dynamically increase number of partitions based on the throughput and data storage.
 
 ### Why a RequestStatusResponse API
 
