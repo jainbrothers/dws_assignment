@@ -10,6 +10,8 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://trade_user:trade_pass@localhost:5432/trade_store"
     )
     kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_security_protocol: str = "PLAINTEXT"  # PLAINTEXT for local, SSL for MSK
+    kafka_topic_replication_factor: int = 1  # 1 for local, set to broker count in AWS
     kafka_topic_trades_inbound: str = "trades-inbound"
     environment: str = "development"
     log_level: str = "INFO"

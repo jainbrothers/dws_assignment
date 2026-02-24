@@ -8,7 +8,7 @@ from app.repositories.request_repository import RequestRepository
 from app.repositories.trade_repository import TradeRepository
 from app.schemas.trade import TradeAccepted, TradeCreate, TradeTemporaryFailure
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class TradeService:
@@ -25,6 +25,11 @@ class TradeService:
     async def ingest_trade(
         self, trade: TradeCreate
     ) -> Union[TradeAccepted, TradeTemporaryFailure]:
+        logger.info(
+            "ingest_trade_received",
+            trade_id=trade.trade_id,
+            version=trade.version,
+        )
         request_id = str(uuid.uuid4())
         payload = {
             "request_id": request_id,

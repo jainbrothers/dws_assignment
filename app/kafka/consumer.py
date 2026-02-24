@@ -1,10 +1,12 @@
 import asyncio
 import json
 import signal
+import ssl
 from datetime import date
 from typing import Optional
 
 import aioboto3
+import certifi
 from aiokafka import AIOKafkaConsumer
 
 from app.config import settings
@@ -19,7 +21,7 @@ from app.schemas.trade import TradeCreate
 from app.validators.maturity_date_validator import MaturityDateValidator
 from app.validators.version_validator import VersionValidator
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 CONSUMER_GROUP_ID = "trade-store-consumer"
 
@@ -99,9 +101,15 @@ async def consume() -> None:
         region_name=settings.aws_region,
         endpoint_url=settings.dynamodb_endpoint_url or None,
     ) as dynamodb_client:
+        ssl_context = None
+        if settings.kafka_security_protocol == "SSL":
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+
         consumer = AIOKafkaConsumer(
             TRADES_INBOUND,
             bootstrap_servers=settings.kafka_bootstrap_servers,
+            security_protocol=settings.kafka_security_protocol,
+            ssl_context=ssl_context,
             group_id=CONSUMER_GROUP_ID,
             value_deserializer=lambda v: json.loads(v.decode("utf-8")),
             auto_offset_reset="earliest",
